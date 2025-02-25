@@ -1,0 +1,22 @@
+openapi: 3.0.0
+info:
+  title: Sample API
+  description: Пример API для демонстрации
+  version: 1.0.0
+servers:
+  - url: https://api.example.com
+paths:
+  /hello:
+    get:
+      summary: Возвращает приветствие
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Привет, мир!
