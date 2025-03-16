@@ -24,6 +24,7 @@
 
 	<modules>
 		<module>lexiscan-app</module>
+		<module>lexiscan-auth</module>
 	</modules>
 
 	<dependencies>
