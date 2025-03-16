@@ -1,4 +1,4 @@
-package dashbah.hse.lexiscanapp.dto;
+package dashbah.hse.lexiscan.app.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

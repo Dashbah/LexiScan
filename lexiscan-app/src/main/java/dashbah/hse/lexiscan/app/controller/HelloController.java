@@ -1,6 +1,6 @@
-package dashbah.hse.lexiscanapp.controller;
+package dashbah.hse.lexiscan.app.controller;
 
-import dashbah.hse.lexiscanapp.dto.ImageDto;
+import dashbah.hse.lexiscan.app.dto.ImageDto;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;

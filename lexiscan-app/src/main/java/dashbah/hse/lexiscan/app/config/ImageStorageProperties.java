@@ -1,4 +1,4 @@
-package dashbah.hse.lexiscanapp.config;
+package dashbah.hse.lexiscan.app.config;
 
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;

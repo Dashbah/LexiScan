@@ -1,4 +1,4 @@
-package dashbah.hse.lexiscanapp;
+package dashbah.hse.lexiscan.app;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

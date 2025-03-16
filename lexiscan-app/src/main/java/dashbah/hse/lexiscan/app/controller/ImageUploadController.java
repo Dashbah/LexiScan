@@ -1,6 +1,6 @@
-package dashbah.hse.lexiscanapp.controller;
+package dashbah.hse.lexiscan.app.controller;
 
-import dashbah.hse.lexiscanapp.config.ImageStorageProperties;
+import dashbah.hse.lexiscan.app.config.ImageStorageProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
