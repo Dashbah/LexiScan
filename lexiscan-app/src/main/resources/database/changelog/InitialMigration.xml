@@ -1,0 +1,177 @@
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <!-- Создание таблицы users -->
+    <changeSet id="1" author="dashbah">
+        <createTable tableName="users">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="username" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="password" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_archived" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Создание последовательности для users -->
+        <createSequence sequenceName="user_seq" incrementBy="50" startValue="1"/>
+    </changeSet>
+
+    <!-- Создание таблицы token -->
+    <changeSet id="2" author="dashbah">
+        <createTable tableName="token">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="token" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="token_type" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_expired" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_revoked" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createSequence sequenceName="token_seq" incrementBy="50" startValue="1"/>
+
+        <!-- Внешний ключ для связи token и users -->
+        <addForeignKeyConstraint baseTableName="token"
+                                 baseColumnNames="user_id"
+                                 constraintName="fk_token_user"
+                                 referencedTableName="users"
+                                 referencedColumnNames="id"/>
+    </changeSet>
+
+    <!-- Создание таблицы chat -->
+    <changeSet id="3" author="dashbah">
+        <createTable tableName="chat">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="chat_uid" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createSequence sequenceName="chat_seq" incrementBy="50" startValue="1"/>
+
+        <!-- Внешний ключ для связи chat и users -->
+        <addForeignKeyConstraint baseTableName="chat"
+                                 baseColumnNames="user_id"
+                                 constraintName="fk_chat_user"
+                                 referencedTableName="users"
+                                 referencedColumnNames="id"/>
+    </changeSet>
+
+    <!-- Создание таблицы message -->
+    <changeSet id="4" author="dashbah">
+        <createTable tableName="message">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="message_uid" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="chat_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createSequence sequenceName="message_seq" incrementBy="50" startValue="1"/>
+
+        <!-- Внешний ключ для связи message и chat -->
+        <addForeignKeyConstraint baseTableName="message"
+                                 baseColumnNames="chat_id"
+                                 constraintName="fk_message_chat"
+                                 referencedTableName="chat"
+                                 referencedColumnNames="id"/>
+    </changeSet>
+
+    <!-- Создание таблицы image -->
+    <changeSet id="5" author="dashbah">
+        <createTable tableName="image">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="image_uid" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="body" type="BYTEA">
+                <constraints nullable="false"/>
+            </column>
+            <column name="message_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createSequence sequenceName="image_seq" incrementBy="50" startValue="1"/>
+
+        <!-- Внешний ключ для связи image и message -->
+        <addForeignKeyConstraint baseTableName="image"
+                                 baseColumnNames="message_id"
+                                 constraintName="fk_image_message"
+                                 referencedTableName="message"
+                                 referencedColumnNames="id"/>
+    </changeSet>
+
+    <!-- Создание таблицы ml_request -->
+    <changeSet id="6" author="dashbah">
+        <createTable tableName="ml_request">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="rquid" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(50)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="percentage" type="DOUBLE">
+                <constraints nullable="true"/>
+            </column>
+            <column name="image_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createSequence sequenceName="ml_request_seq" incrementBy="50" startValue="1"/>
+
+        <!-- Внешний ключ для связи ml_request и image -->
+        <addForeignKeyConstraint baseTableName="ml_request"
+                                 baseColumnNames="image_id"
+                                 constraintName="fk_ml_request_image"
+                                 referencedTableName="image"
+                                 referencedColumnNames="id"/>
+    </changeSet>
+
+</databaseChangeLog>
