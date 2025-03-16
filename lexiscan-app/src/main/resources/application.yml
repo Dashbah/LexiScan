@@ -4,7 +4,7 @@ spring:
     #url: jdbc:postgresql://localhost:5432/wishlist_dev
     #username: postgres
     #password: postgres
-    url: jdbc:postgresql://localhost:5432/shkaf
+    url: jdbc:postgresql://localhost:5432/lexiscan_dev
     username: admin
     password: 123qwe
   jpa:
