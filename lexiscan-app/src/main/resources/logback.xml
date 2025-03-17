@@ -28,7 +28,7 @@
             <label>
                 <!-- Labels -->
                 <pattern>
-                    app = wishlist-app,
+                    app = lexiscan-app,
                     host = loki
                 </pattern>
                 <!-- Structured metadata (since Loki v2.9.0) -->
