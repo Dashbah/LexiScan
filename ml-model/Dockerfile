@@ -1,10 +1,14 @@
-FROM python:3.8
+# Stage 1: Build the application with Maven
+FROM maven:latest AS builder
+WORKDIR /app
+COPY . /app
+#RUN mvn clean install -x test
+# this row can be deleted in develop cases
+RUN mvn -f /app/pom.xml clean package -Dmaven.test.skip=true
 
-WORKDIR /practice-security/kv
-COPY requirements.txt .
-
-RUN pip install -r requirements.txt
-
-COPY * .
-
-ENTRYPOINT ["python", "server.py"]
+# Stage 2: Run the application with OpenJDK 21
+FROM openjdk:21-slim
+WORKDIR /app
+COPY --from=builder /app/target/*.jar /app/lexiscan-ml-model.jar
+EXPOSE 8686
+ENTRYPOINT ["java", "-jar", "/app/lexiscan-ml-model.jar"]

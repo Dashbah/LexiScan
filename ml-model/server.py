@@ -1,99 +1,46 @@
-import argparse
-import logging
-import os
+from flask import Flask, request, jsonify
+import onnxruntime as ort
+import numpy as np
+from PIL import Image
+import io
 
-from flask import Flask, jsonify, request, make_response
-from typing import List, Optional
-import jwt
-import hashlib
+app = Flask(__name__)
 
-from config import ENDPOINT_BASE
+# Загрузка ONNX модели
+model_path = "best-model.onnx"
+session = ort.InferenceSession(model_path)
 
+def preprocess_image(image_bytes):
+    # Преобразование изображения в формат, подходящий для модели
+    image = Image.open(io.BytesIO(image_bytes))
+    image = image.resize((224, 224))  # Пример изменения размера, зависит от модели
+    image = np.array(image).astype(np.float32)
+    image = np.transpose(image, (2, 0, 1))  # Изменение порядка каналов, если необходимо
+    image = np.expand_dims(image, axis=0)  # Добавление batch dimension
+    return image
 
+@app.route('/ml-model/count', methods=['POST'])
+def count():
+    data = request.json
+    rquid = data['rquid']
+    image_bytes = data['image']
 
-class Server:
-    def __init__(self):
-        self._storage = {}
+    # Преобразование изображения
+    input_image = preprocess_image(image_bytes)
 
-    def put(self, key, value, user) -> bool:
-        if self._storage.get(key, None) == None:
-            self._storage[key] = [value, user]
-            return True
-        if self._storage[key][1] != user:
-            print(key)
-            print(self._storage[key][1])
-            print(user)
-            return False
-        self._storage[key] = [value, user]
-        return True
-    
-    def get(self, key, user) -> dict:
-        if self._storage.get(key, None) == None:
-            return {"status": 404, "value": ""}
-        if self._storage[key][1] != user:
-            return {"status": 403, "value": ""}
-        return {"status": 200, "value": self._storage[key][0]}
+    # Выполнение модели
+    input_name = session.get_inputs()[0].name
+    output_name = session.get_outputs()[0].name
+    result = session.run([output_name], {input_name: input_image})
 
+    # Получение результата
+    percentage = float(result[0][0])  # Пример, зависит от модели
 
-def create_app() -> Flask:
-    """
-    Create flask application
-    """
-    app = Flask(__name__)
-
-    server = Server()
-
-    
-    @app.route(f'{ENDPOINT_BASE}/put', methods=['POST'])
-    def put():
-        cookie = request.cookies.get("jwt")
-        if cookie == None:
-            return "wrong cookie", 401
-        
-        try:
-            file = open(args.public, mode='rb')
-            public_key = file.read()
-            decoded = jwt.decode(cookie, public_key, algorithms=["RS256"])
-        except Exception:
-            return "wrong cookie", 400
-        
-        key = request.args.get('key')
-        body = request.get_json(force=True)
-        status = server.put(key, body["value"], decoded["username"])
-        if status == False:
-            return "key exist", 403
-        return "Ok", 200
-
-    @app.route(f'{ENDPOINT_BASE}/get', methods=['GET'])
-    def get():
-        key = request.args.get('key')
-        cookie = request.cookies.get("jwt")
-        if cookie == None:
-            return "wrong cookie", 401
-        try:
-            file = open(args.public, mode='rb')
-            public_key = file.read()
-            decoded = jwt.decode(cookie, public_key, algorithms=["RS256"])
-        except Exception:
-            return "wrong cookie", 400
-        
-        answer = server.get(key, decoded["username"])
-
-        if answer["status"] != 200:
-            return "Invalid key", answer["status"]
-        return {"value": answer["value"]}
-
-    return app
-
-
-app = create_app()
-
-args = []
+    # Возвращение результата
+    return jsonify({
+        'rquid': rquid,
+        'percentage': percentage
+    })
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--port", type=int, default=8091)
-    parser.add_argument("--public", type=str, default="/tmp/signature.pub")
-    args = parser.parse_args()
-    logging.basicConfig()
-    app.run(host='0.0.0.0', port=args.port)
+    app.run(host='0.0.0.0', port=5000)
