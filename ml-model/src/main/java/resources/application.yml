@@ -1,28 +1,11 @@
 spring:
-  datasource:
-    #    locally
-    #url: jdbc:postgresql://localhost:5432/wishlist_dev
-    #username: postgres
-    #password: postgres
-    url: jdbc:postgresql://localhost:5432/shkaf
-    username: admin
-    password: 123qwe
-  jpa:
-    hibernate:
-      ddl-auto: none
-    show-sql: true
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
-  liquibase:
-    change-log: classpath:database/changelog/InitialMigration.xml
-    enabled: true
-    drop-first: false
-    default-schema: public
   thymeleaf:
     cache: false
   application:
-    name: lexiscan-auth
+    name: lexiscan-ml
   servlet:
     multipart:
       enabled: true
@@ -45,9 +28,6 @@ management:
     metrics:
       export:
         enabled: true
-
-file:
-  uploadingDirectory: photos
 
 server:
   port: 8086

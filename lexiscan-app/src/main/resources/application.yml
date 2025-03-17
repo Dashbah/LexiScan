@@ -47,7 +47,7 @@ management:
         enabled: true
 
 model:
-  url: "http://127.0.0.1:8080/m-model/count"
+  url: "http://127.0.0.1:8080/ml-model/count"
 
 storage:
   url: jdbc:postgresql://localhost:5432/lexiscan_dev

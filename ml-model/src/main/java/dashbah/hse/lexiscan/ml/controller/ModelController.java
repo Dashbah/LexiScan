@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Random;
 
 @RestController
-@RequestMapping("/m-model")
+@RequestMapping("/ml-model")
 @RequiredArgsConstructor
 public class ModelController {
 
