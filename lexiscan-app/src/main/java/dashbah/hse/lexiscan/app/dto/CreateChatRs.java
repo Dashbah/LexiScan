@@ -1,5 +1,6 @@
 package dashbah.hse.lexiscan.app.dto;
 
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MlModelRs {
+public class CreateChatRs {
     String rquid;
-    double percentage;
+    String chatUId;
 }

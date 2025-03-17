@@ -11,5 +11,5 @@ import lombok.NoArgsConstructor;
 @Builder
 public class MlModelRq {
     String rquid;
-    byte[] image;
+    String image;
 }

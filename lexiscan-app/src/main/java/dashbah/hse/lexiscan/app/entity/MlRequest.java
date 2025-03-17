@@ -15,8 +15,8 @@ import lombok.NoArgsConstructor;
 public class MlRequest {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "m1_request_seq")
-    @SequenceGenerator(name = "m1_request_seq", sequenceName = "m1_request_seq", allocationSize = 50)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ml_request_seq")
+    @SequenceGenerator(name = "ml_request_seq", sequenceName = "ml_request_seq", allocationSize = 50)
     private Long id;
 
     @Column(nullable = false)
@@ -28,7 +28,6 @@ public class MlRequest {
     @Column
     private Double percentage;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "image_id", nullable = false)
-    private Image image;
+    @Column
+    private String image_uid;
 }

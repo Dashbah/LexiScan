@@ -159,19 +159,12 @@
             <column name="percentage" type="DOUBLE">
                 <constraints nullable="true"/>
             </column>
-            <column name="image_id" type="BIGINT">
+            <column name="image_uid" type="varchar(255)">
                 <constraints nullable="false"/>
             </column>
         </createTable>
 
         <createSequence sequenceName="ml_request_seq" incrementBy="50" startValue="1"/>
-
-        <!-- Внешний ключ для связи ml_request и image -->
-        <addForeignKeyConstraint baseTableName="ml_request"
-                                 baseColumnNames="image_id"
-                                 constraintName="fk_ml_request_image"
-                                 referencedTableName="image"
-                                 referencedColumnNames="id"/>
     </changeSet>
 
 </databaseChangeLog>

@@ -1,5 +1,6 @@
 package dashbah.hse.lexiscan.app.service.impl;
 
+import dashbah.hse.lexiscan.app.config.MlModelRestProperties;
 import dashbah.hse.lexiscan.app.dto.ImageProcessingRs;
 import dashbah.hse.lexiscan.app.dto.MlModelRq;
 import dashbah.hse.lexiscan.app.dto.MlModelRs;
@@ -8,10 +9,11 @@ import dashbah.hse.lexiscan.app.entity.Image;
 import dashbah.hse.lexiscan.app.entity.Message;
 import dashbah.hse.lexiscan.app.entity.MlRequest;
 import dashbah.hse.lexiscan.app.exception.ChatNotFoundException;
-import dashbah.hse.lexiscan.app.repository.ImageRepository;
+import dashbah.hse.lexiscan.app.exception.ImageNotFoundException;
 import dashbah.hse.lexiscan.app.repository.MessageRepository;
 import dashbah.hse.lexiscan.app.repository.MlRequestRepository;
 import dashbah.hse.lexiscan.app.service.ImageProcessingService;
+import dashbah.hse.lexiscan.app.service.ImageService;
 import dashbah.hse.lexiscan.app.service.RepositoryDataHandler;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
+import java.util.Base64;
 
 @Service
 @RequiredArgsConstructor
@@ -30,9 +33,9 @@ public class ImageProcessingServiceImpl implements ImageProcessingService {
     private final RestTemplate restTemplate = new RestTemplate();
     private final RepositoryDataHandler repositoryDataHandler;
     private final MessageRepository messageRepository;
-    private final ImageRepository imageRepository;
     private final MlRequestRepository mlRequestRepository;
-    private static final String ML_MODEL_URL = "http://localhost:7070/ml-model/count";
+    private final ImageService imageService;
+    private final MlModelRestProperties mlModelRestProperties;
 
     /**
      * Сохраняет изображение в чат и отправляет его в ML-модель.
@@ -43,12 +46,19 @@ public class ImageProcessingServiceImpl implements ImageProcessingService {
      */
     @Override
     public ImageProcessingRs processImage(String rquid, String chatUId, byte[] image) throws ChatNotFoundException {
-        MlRequest mlRequest = saveImage(chatUId, image);
-        MlModelRq mlModelRq = buildMlModelRq(mlRequest);
+        MlRequest mlRequest = saveRequest(chatUId, image);
+        MlModelRq mlModelRq = null;
+        try {
+            mlModelRq = buildMlModelRq(mlRequest);
+        } catch (ImageNotFoundException e) {
+            log.error(rquid + ": Image was not found");
+            throw new RuntimeException(e);
+        }
 
         // Вызов ML-модели
         try {
-            MlModelRs mlResponse = restTemplate.postForObject(ML_MODEL_URL, mlModelRq, MlModelRs.class);
+            log.info(rquid + ": image sending to ml-model, body: " + mlModelRq.toString().substring(0, 15));
+            MlModelRs mlResponse = restTemplate.postForObject(mlModelRestProperties.getMlModelUrl(), mlModelRq, MlModelRs.class);
             mlRequest = updateMlRq(mlResponse, mlRequest, "Completed");
 
             return ImageProcessingRs.builder()
@@ -78,15 +88,16 @@ public class ImageProcessingServiceImpl implements ImageProcessingService {
         return mlRequestRepository.save(mlRequest);
     }
 
-    private MlModelRq buildMlModelRq(MlRequest mlRequest) {
+    private MlModelRq buildMlModelRq(MlRequest mlRequest) throws ImageNotFoundException {
+        var imageBody = imageService.getImageBinaryDataByUid(mlRequest.getImage_uid());
         return MlModelRq.builder()
                 .rquid(mlRequest.getRquid())
-                .image(mlRequest.getImage().getBody())
+                .image(Base64.getEncoder().encodeToString(imageBody))
                 .build();
     }
 
     @Transactional
-    private MlRequest saveImage(String chatUId, byte[] imageData) throws ChatNotFoundException {
+    private MlRequest saveRequest(String chatUId, byte[] imageData) throws ChatNotFoundException {
         // TODO: validate that this is my chat
 
         Chat chat = repositoryDataHandler.findChatByChatUId(chatUId);
@@ -102,14 +113,14 @@ public class ImageProcessingServiceImpl implements ImageProcessingService {
         // Сохраняем изображение
         Image image = Image.builder()
                 .imageUid("img_" + System.currentTimeMillis())
-                .body(imageData)
+                .body(imageData.clone())
                 .message(message)
                 .build();
-        imageRepository.save(image);
+        imageService.saveImage(image);
 
         MlRequest mlRequest = MlRequest.builder()
                 .rquid("req_" + System.currentTimeMillis())
-                .image(image)
+                .image_uid(image.getImageUid())
                 .status("PENDING")
                 .build();
         mlRequestRepository.save(mlRequest);

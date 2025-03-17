@@ -37,6 +37,7 @@ public class ImageUploadController {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
             log.error(rquid, (Object) e.getStackTrace());
+            log.error(e.getMessage() + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error uploading image");
         }
     }

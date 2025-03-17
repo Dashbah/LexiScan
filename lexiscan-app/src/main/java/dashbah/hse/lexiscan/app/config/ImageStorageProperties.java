@@ -7,6 +7,10 @@ import org.springframework.stereotype.Component;
 @Component
 @Getter
 public class ImageStorageProperties {
-    @Value("${file.uploadingDirectory}")
-    private String uploadingDirectory;
+    @Value("${storage.url}")
+    private String url;
+    @Value("${storage.username}")
+    private String username;
+    @Value("${storage.password}")
+    private String password;
 }

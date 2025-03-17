@@ -29,7 +29,4 @@ public class Image {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "message_id", nullable = false)
     private Message message;
-
-    @OneToOne(mappedBy = "image", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private MlRequest mlRequest;
 }
