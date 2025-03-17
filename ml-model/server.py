@@ -3,6 +3,7 @@ import onnxruntime as ort
 import numpy as np
 from PIL import Image
 import io
+import base64
 
 app = Flask(__name__)
 
@@ -21,26 +22,38 @@ def preprocess_image(image_bytes):
 
 @app.route('/ml-model/count', methods=['POST'])
 def count():
-    data = request.json
-    rquid = data['rquid']
-    image_bytes = data['image']
+    try:
+        if not request.is_json:
+            return jsonify({"error": "Требуется JSON"}), 400
 
-    # Преобразование изображения
-    input_image = preprocess_image(image_bytes)
+        data = request.get_json()
+        rquid = data.get('rquid')
+        image_b64 = data.get('image')
 
-    # Выполнение модели
-    input_name = session.get_inputs()[0].name
-    output_name = session.get_outputs()[0].name
-    result = session.run([output_name], {input_name: input_image})
+        if not all([rquid, image_b64]):
+            return jsonify({"error": "Отсутствуют rquid или image"}), 400
 
-    # Получение результата
-    percentage = float(result[0][0])  # Пример, зависит от модели
+        # Декодируем Base64
+        image_bytes = base64.b64decode(image_b64)  # Исправление здесь
 
-    # Возвращение результата
-    return jsonify({
-        'rquid': rquid,
-        'percentage': percentage
-    })
+        input_image = preprocess_image(image_bytes)
+
+        # Выполнение модели
+        input_name = session.get_inputs()[0].name
+        output_name = session.get_outputs()[0].name
+        result = session.run([output_name], {input_name: input_image})
+
+        # Получение результата
+        percentage = float(result[0][0])  # Пример, зависит от модели
+
+        # Возвращение результата
+        return jsonify({
+            'rquid': rquid,
+            'percentage': percentage
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
