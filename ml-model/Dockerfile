@@ -10,5 +10,5 @@ RUN mvn -f /app/pom.xml clean package -Dmaven.test.skip=true
 FROM openjdk:21-slim
 WORKDIR /app
 COPY --from=builder /app/target/*.jar /app/lexiscan-ml-model.jar
-EXPOSE 8686
+EXPOSE 8585
 ENTRYPOINT ["java", "-jar", "/app/lexiscan-ml-model.jar"]

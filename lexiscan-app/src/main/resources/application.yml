@@ -47,7 +47,7 @@ management:
         enabled: true
 
 model:
-  url: "http://127.0.0.1:8080/ml-model/count"
+  url: "http://localhost:8585/ml-model/count"
 
 storage:
   url: jdbc:postgresql://localhost:5432/lexiscan_dev
@@ -55,6 +55,6 @@ storage:
   password: 123qwe
 
 server:
-  port: 8086
+  port: 8181
   #  in bytes - for image uploading
   max-http-request-header-size: 1073741824

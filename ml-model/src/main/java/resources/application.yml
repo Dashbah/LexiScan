@@ -30,6 +30,6 @@ management:
         enabled: true
 
 server:
-  port: 8086
+  port: 8585
   #  in bytes - for image uploading
   max-http-request-header-size: 1073741824
