@@ -11,5 +11,5 @@ import lombok.NoArgsConstructor;
 @Builder
 public class MlModelRq {
     String rquid;
-    String image;
+    String image; // base64 format
 }
