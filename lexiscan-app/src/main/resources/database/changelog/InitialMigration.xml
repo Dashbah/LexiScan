@@ -167,4 +167,16 @@
         <createSequence sequenceName="ml_request_seq" incrementBy="50" startValue="1"/>
     </changeSet>
 
+    <changeSet id="7" author="dashbah">
+        <dropForeignKeyConstraint baseTableName="token"
+                                  constraintName="fk_token_user"/>
+
+        <addForeignKeyConstraint baseTableName="token"
+                                 baseColumnNames="user_id"
+                                 constraintName="fk_token_user"
+                                 referencedTableName="users"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"/>
+    </changeSet>
+
 </databaseChangeLog>
