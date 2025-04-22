@@ -21,6 +21,7 @@ public class ChatController {
 
     private final ChatService chatService;
 
+    // TODO: fix giving 500 if token is expired
     @PostMapping(path = "/new")
     public ResponseEntity<String> createChat(@RequestParam String username, @RequestHeader String rquid) {
         log.info(rquid, "Принят запрос на создание чата");

@@ -1,8 +1,8 @@
 package dashbah.hse.lexiscan.app.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dashbah.hse.lexiscan.app.config.MlModelRestProperties;
 import dashbah.hse.lexiscan.app.dto.ImageProcessingRs;
-import dashbah.hse.lexiscan.app.dto.MlModelRq;
 import dashbah.hse.lexiscan.app.dto.MlModelRs;
 import dashbah.hse.lexiscan.app.entity.Chat;
 import dashbah.hse.lexiscan.app.entity.Image;
@@ -18,19 +18,26 @@ import dashbah.hse.lexiscan.app.service.RepositoryDataHandler;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.Base64;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class ImageProcessingServiceImpl implements ImageProcessingService {
 
-    private final RestTemplate restTemplate = new RestTemplate();
     private final RepositoryDataHandler repositoryDataHandler;
     private final MessageRepository messageRepository;
     private final MlRequestRepository mlRequestRepository;
@@ -45,9 +52,9 @@ public class ImageProcessingServiceImpl implements ImageProcessingService {
      * @return Процент от ML-модели.
      */
     @Override
-    public ImageProcessingRs processImage(String rquid, String chatUId, byte[] image) throws ChatNotFoundException {
+    public ImageProcessingRs processImage(String rquid, String chatUId, byte[] image, String fileName) throws ChatNotFoundException, IOException {
         MlRequest mlRequest = saveRequest(chatUId, image);
-        MlModelRq mlModelRq = null;
+        byte[] mlModelRq = null;
         try {
             mlModelRq = buildMlModelRq(mlRequest);
         } catch (ImageNotFoundException e) {
@@ -57,13 +64,13 @@ public class ImageProcessingServiceImpl implements ImageProcessingService {
 
         // Вызов ML-модели
         try {
-            log.info(rquid + ": image sending to ml-model, body: " + mlModelRq.toString().substring(0, 15));
-            MlModelRs mlResponse = restTemplate.postForObject(mlModelRestProperties.getMlModelUrl(), mlModelRq, MlModelRs.class);
+            MlModelRs mlResponse = sendToMl(rquid, mlModelRq, fileName);
+
             mlRequest = updateMlRq(mlResponse, mlRequest, "Completed");
 
             return ImageProcessingRs.builder()
                     .rquid(rquid)
-                    .percentage(mlResponse.getPercentage())
+                    .percentage(mlResponse.getConfidence())
                     .build();
         } catch (RestClientException e) {
             log.warn(rquid, "ошибка отправки сообщения в мл модель. " + e.getMessage());
@@ -76,10 +83,40 @@ public class ImageProcessingServiceImpl implements ImageProcessingService {
         }
     }
 
+
+    MlModelRs sendToMl(String rquid, byte[] mlModelRq, String fileName) throws IOException {
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+        HttpPost uploadFile = new HttpPost(mlModelRestProperties.getMlModelUrl());
+        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+        builder.addTextBody("rquid", rquid, ContentType.TEXT_PLAIN);
+
+        builder.addBinaryBody(
+                "image",
+                mlModelRq,
+                ContentType.APPLICATION_OCTET_STREAM,
+                fileName
+        );
+
+        HttpEntity multipart = builder.build();
+        uploadFile.setEntity(multipart);
+
+        log.info(rquid + ": image sending to ml-model, filename: " + fileName);
+        try (CloseableHttpResponse response = httpClient.execute(uploadFile)) {
+            HttpEntity responseEntity = response.getEntity();
+
+            String responseString = EntityUtils.toString(responseEntity);
+            log.info("{}: received response from ml model: {}", rquid, responseString);
+
+            ObjectMapper objectMapper = new ObjectMapper();
+
+            return objectMapper.readValue(responseString, MlModelRs.class);
+        }
+    }
+
     @Transactional
     private MlRequest updateMlRq(MlModelRs mlResponse, MlRequest mlRequest, String status) {
         mlRequest.setStatus(status);
-        mlRequest.setPercentage(mlResponse.getPercentage());
+        mlRequest.setPercentage(mlResponse.getConfidence());
         return mlRequestRepository.save(mlRequest);
     }
 
@@ -88,12 +125,8 @@ public class ImageProcessingServiceImpl implements ImageProcessingService {
         return mlRequestRepository.save(mlRequest);
     }
 
-    private MlModelRq buildMlModelRq(MlRequest mlRequest) throws ImageNotFoundException {
-        var imageBody = imageService.getImageBinaryDataByUid(mlRequest.getImage_uid());
-        return MlModelRq.builder()
-                .rquid(mlRequest.getRquid())
-                .image(Base64.getEncoder().encodeToString(imageBody))
-                .build();
+    private byte[] buildMlModelRq(MlRequest mlRequest) throws ImageNotFoundException {
+        return imageService.getImageBinaryDataByUid(mlRequest.getImage_uid());
     }
 
     @Transactional

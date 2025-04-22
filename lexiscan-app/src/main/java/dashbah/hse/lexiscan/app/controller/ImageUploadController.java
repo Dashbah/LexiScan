@@ -29,7 +29,7 @@ public class ImageUploadController {
             }
 
             // TODO: take user from context
-            ImageProcessingRs rq = imageProcessingService.processImage(rquid, chatUId, file.getBytes());
+            ImageProcessingRs rq = imageProcessingService.processImage(rquid, chatUId, file.getBytes(), file.getOriginalFilename());
             log.info(rquid, "Изображение успешно обработано: " + rq);
             return ResponseEntity.ok(rq.toString());
         } catch (ChatNotFoundException e) {
