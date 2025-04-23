@@ -8,11 +8,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-@Controller
+import static dashbah.hse.lexiscan.app.util.Util.generateUid;
+
+@RestController
 @RequestMapping("/api/model")
 @RequiredArgsConstructor
 @Slf4j
@@ -20,7 +21,8 @@ public class ImageUploadController {
     private final ImageProcessingService imageProcessingService;
 
     @PostMapping(path = "/upload", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<String> uploadImage(@RequestParam String chatUId, @RequestParam String username, @RequestHeader String rquid, @RequestPart("file") MultipartFile file) {
+    public ResponseEntity<String> uploadImage(@RequestParam String chatUId, @RequestPart("file") MultipartFile file) {
+        String rquid = generateUid();
         log.info(rquid, "Принят запрос на загрузку изображения");
         try {
             if (file == null || file.isEmpty()) {

@@ -26,7 +26,8 @@ public class AccountController {
     private final UserServiceImpl userService;
 
     @GetMapping
-    public ResponseEntity<UserDTORs> getAccount() {
+    public ResponseEntity<UserDTORs> getAccount(@RequestHeader(required = false) String rquid) {
+        log.info(rquid + ": Получен запрос на инфо аккаунта");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getPrincipal() instanceof UserDetails userDetails) {
             String username = userDetails.getUsername();

@@ -28,7 +28,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -133,13 +132,13 @@ public class ImageProcessingServiceImpl implements ImageProcessingService {
     private MlRequest saveRequest(String chatUId, byte[] imageData) throws ChatNotFoundException {
         // TODO: validate that this is my chat
 
-        Chat chat = repositoryDataHandler.findChatByChatUId(chatUId);
+        Chat chatEntity = repositoryDataHandler.findChatByChatUId(chatUId);
 
         // Создаем сообщение
         Message message = Message.builder()
                 .messageUid("msg_" + System.currentTimeMillis())
                 .createdAt(LocalDateTime.now())
-                .chat(chat)
+                .chat(chatEntity)
                 .build();
         messageRepository.save(message);
 

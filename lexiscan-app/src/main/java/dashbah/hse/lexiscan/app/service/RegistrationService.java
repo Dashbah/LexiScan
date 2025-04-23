@@ -1,6 +1,7 @@
 package dashbah.hse.lexiscan.app.service;
 
 import dashbah.hse.lexiscan.app.config.security.JwtService;
+import dashbah.hse.lexiscan.app.dto.LoginDTO;
 import dashbah.hse.lexiscan.app.dto.UserDTO;
 import dashbah.hse.lexiscan.app.entity.Role;
 import dashbah.hse.lexiscan.app.entity.Token;
@@ -90,7 +91,7 @@ public class RegistrationService {
         tokenRepository.saveAll(validUserTokens);
     }
 
-    public String authenticateUser(UserDTO userDTO) throws AuthenticationException {
+    public String authenticateUser(LoginDTO userDTO) throws AuthenticationException {
         var user = userRepository.getByUsername(userDTO.getUsername());
         if (user.isEmpty()) {
             throw new UsernameNotFoundException("Username doesn't exists");

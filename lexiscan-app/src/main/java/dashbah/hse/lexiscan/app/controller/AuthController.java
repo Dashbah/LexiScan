@@ -1,5 +1,6 @@
 package dashbah.hse.lexiscan.app.controller;
 
+import dashbah.hse.lexiscan.app.dto.LoginDTO;
 import dashbah.hse.lexiscan.app.dto.UserDTO;
 import dashbah.hse.lexiscan.app.service.RegistrationService;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +46,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> authenticate(@RequestBody UserDTO userDTO) {
+    public ResponseEntity<String> authenticate(@RequestBody LoginDTO userDTO) {
         try {
             System.out.println("Hello from authenticate");
             return ResponseEntity.ok(service.authenticateUser(userDTO));
