@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WishlistApp</title>
+git     <title>lexiscanApp</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -20,7 +20,7 @@
             max-width: 600px;
             text-align: center;
             background-color: white;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
             border-radius: 15px;
             padding: 30px;
         }
@@ -36,39 +36,6 @@
             font-size: 16px;
             line-height: 1.5;
             margin-bottom: 40px;
-        }
-
-        form {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        input[type="text"],
-        input[type="file"] {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            font-size: 16px;
-        }
-
-        input[type="submit"],
-        input[type="reset"] {
-            background-color: #007b99;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        input[type="submit"]:hover,
-        input[type="reset"]:hover {
-            background-color: #005f7f; /* Темнее при наведении */
         }
 
         ul {
@@ -91,16 +58,26 @@
 </head>
 <body>
 <div class="container">
-    <h1>Welcome to LexiScan!</h1>
+    <h1>Welcome to lexiscanApp!</h1>
     <p>Made by Dashbah</p>
 
-
-    <form action="/api/uploads/images" method="post" enctype='multipart/form-data'>
-        <input type="file" name="file">
-        <input type=submit value="Upload" />
-    </form>
-
+    <ul>
+        <li><a href="http://89.169.154.190:8080">You are here</a></li>
+        <li><a href="http://89.169.154.190:8080/swagger-ui/index.html">Swagger</a></li>
+        <li><a href="http://89.169.154.190:8080/actuator/prometheus">/actuator/prometheus</a></li>
+        <li><a href="http://89.169.154.190:8080/actuator">/actuator</a>
+        </li><li><a href="http://localhost:16686/search">Jaeger UI - traces</a></li>
+        <li>
+            <a href="http://localhost:3000/a/grafana-lokiexplore-app/explore?patterns=%5B%5D&var-primary_label=service_name%7C%3D~%7C.%2B&from=now-15m&to=now&timezone=browser&var-ds=debdo60co8zy8b&var-filters=&var-fields=&var-levels=&var-metadata=&var-patterns=&var-lineFilterV2=&var-lineFilters=&var-filters_replica=">
+                Loki logs
+            </a>
+        </li>
+        <li>
+            <a href="http://localhost:9411/zipkin/?serviceName=lexiscan-app&annotationQuery=error&lookback=15m&endTs=1739392361932&limit=10">
+                See errors (traces format) - Zipkin UI
+            </a>
+        </li>
+    </ul>
 </div>
-
 </body>
 </html>
