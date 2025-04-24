@@ -69,14 +69,15 @@ public class ImageProcessingServiceImpl implements ImageProcessingService {
 
             return ImageProcessingRs.builder()
                     .rquid(rquid)
-                    .percentage(mlResponse.getConfidence())
+                    .confidence(mlResponse.getConfidence())
+                    .prediction(mlResponse.getPrediction())
                     .build();
         } catch (RestClientException e) {
-            log.warn(rquid, "ошибка отправки сообщения в мл модель. " + e.getMessage());
+            log.warn(rquid + ": ошибка отправки сообщения в мл модель. " + e.getMessage());
             updateMlRqStatus(mlRequest, "REST_ERROR");
             throw e;
         } catch (Exception e) {
-            log.error(rquid, "ошибка отправки сообщения в мл модель. " + e.getMessage());
+            log.error(rquid + ": ошибка отправки сообщения в мл модель. " + e.getMessage());
             updateMlRqStatus(mlRequest, "ERROR");
             throw e;
         }
@@ -125,26 +126,27 @@ public class ImageProcessingServiceImpl implements ImageProcessingService {
     }
 
     private byte[] buildMlModelRq(MlRequest mlRequest) throws ImageNotFoundException {
-        return imageService.getImageBinaryDataByUid(mlRequest.getImage_uid());
+        return imageService.getImageBinaryDataByUid(mlRequest.getImageUId());
     }
 
     @Transactional
     private MlRequest saveRequest(String chatUId, byte[] imageData) throws ChatNotFoundException {
-        // TODO: validate that this is my chat
+        // TODO: validate that this is user's chat
 
         Chat chatEntity = repositoryDataHandler.findChatByChatUId(chatUId);
 
-        // Создаем сообщение
+        String imageUId = "img_" + System.currentTimeMillis();
+
         Message message = Message.builder()
                 .messageUid("msg_" + System.currentTimeMillis())
                 .createdAt(LocalDateTime.now())
                 .chat(chatEntity)
+                .imageUID(imageUId)
                 .build();
         messageRepository.save(message);
 
-        // Сохраняем изображение
         Image image = Image.builder()
-                .imageUid("img_" + System.currentTimeMillis())
+                .imageUid(imageUId)
                 .body(imageData.clone())
                 .message(message)
                 .build();
@@ -152,7 +154,7 @@ public class ImageProcessingServiceImpl implements ImageProcessingService {
 
         MlRequest mlRequest = MlRequest.builder()
                 .rquid("req_" + System.currentTimeMillis())
-                .image_uid(image.getImageUid())
+                .imageUId(image.getImageUid())
                 .status("PENDING")
                 .build();
         mlRequestRepository.save(mlRequest);

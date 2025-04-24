@@ -21,26 +21,26 @@ public class ImageUploadController {
     private final ImageProcessingService imageProcessingService;
 
     @PostMapping(path = "/upload", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<String> uploadImage(@RequestParam String chatUId, @RequestPart("file") MultipartFile file) {
+    public ResponseEntity<ImageProcessingRs> uploadImage(@RequestParam String chatUId, @RequestPart("file") MultipartFile file) {
         String rquid = generateUid();
-        log.info(rquid, "Принят запрос на загрузку изображения");
+        log.info(rquid + ": Принят запрос на загрузку изображения");
         try {
             if (file == null || file.isEmpty()) {
-                log.info(rquid, "Нет файла в запросе");
-                return ResponseEntity.badRequest().body("No file uploaded");
+                log.info(rquid + ": Нет файла в запросе");
+                return ResponseEntity.badRequest().build();
             }
 
             // TODO: take user from context
-            ImageProcessingRs rq = imageProcessingService.processImage(rquid, chatUId, file.getBytes(), file.getOriginalFilename());
-            log.info(rquid, "Изображение успешно обработано: " + rq);
-            return ResponseEntity.ok(rq.toString());
+            ImageProcessingRs rs = imageProcessingService.processImage(rquid, chatUId, file.getBytes(), file.getOriginalFilename());
+            log.info(rquid + ": Изображение успешно обработано: " + rs);
+            return ResponseEntity.ok(rs);
         } catch (ChatNotFoundException e) {
             log.warn(rquid, e.getMessage());
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             log.error(rquid, (Object) e.getStackTrace());
             log.error(e.getMessage() + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error uploading image");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 }

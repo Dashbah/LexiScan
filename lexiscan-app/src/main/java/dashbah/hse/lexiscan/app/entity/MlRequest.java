@@ -28,6 +28,6 @@ public class MlRequest {
     @Column
     private Double percentage;
 
-    @Column
-    private String image_uid;
+    @Column(name = "image_uid")
+    private String imageUId;
 }

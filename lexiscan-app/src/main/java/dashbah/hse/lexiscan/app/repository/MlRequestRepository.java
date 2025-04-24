@@ -4,4 +4,5 @@ import dashbah.hse.lexiscan.app.entity.MlRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface MlRequestRepository extends JpaRepository<MlRequest, Long> {
+    MlRequest findByImageUId(String imageUId);
 }

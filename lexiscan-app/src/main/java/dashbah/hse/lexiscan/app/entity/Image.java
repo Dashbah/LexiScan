@@ -19,7 +19,7 @@ public class Image {
     @SequenceGenerator(name = "image_seq", sequenceName = "image_seq", allocationSize = 50)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(name = "image_uid", nullable = false)
     private String imageUid;
 
     @Lob
