@@ -7,5 +7,6 @@ import lombok.Getter;
 @Builder
 public class ImageProcessingRs {
     String rquid;
-    Double percentage;
+    Double confidence;
+    String prediction;
 }

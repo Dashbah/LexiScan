@@ -179,4 +179,10 @@
                                  onDelete="CASCADE"/>
     </changeSet>
 
+    <changeSet id="add_image_UID" author="dashbah">
+        <addColumn tableName="message">
+            <column name="image_uid" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>
