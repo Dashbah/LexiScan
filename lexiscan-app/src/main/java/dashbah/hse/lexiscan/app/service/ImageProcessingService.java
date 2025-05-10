@@ -1,6 +1,6 @@
 package dashbah.hse.lexiscan.app.service;
 
-import dashbah.hse.lexiscan.app.dto.ImageProcessingRs;
+import dashbah.hse.lexiscan.app.dto.client.imageprocessing.ImageProcessingRs;
 import dashbah.hse.lexiscan.app.exception.ChatNotFoundException;
 
 import java.io.IOException;

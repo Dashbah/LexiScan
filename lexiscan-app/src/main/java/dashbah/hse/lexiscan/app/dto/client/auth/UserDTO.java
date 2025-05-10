@@ -1,4 +1,4 @@
-package dashbah.hse.lexiscan.app.dto;
+package dashbah.hse.lexiscan.app.dto.client.auth;
 
 import dashbah.hse.lexiscan.app.entity.Role;
 import lombok.AllArgsConstructor;
@@ -10,8 +10,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserDTORs {
+public class UserDTO {
     private String username;
+    private String password;
     private String email;
     private Role role;
 }

@@ -1,4 +1,4 @@
-package dashbah.hse.lexiscan.app.dto;
+package dashbah.hse.lexiscan.app.dto.client.chat;
 
 import lombok.Builder;
 import lombok.Data;

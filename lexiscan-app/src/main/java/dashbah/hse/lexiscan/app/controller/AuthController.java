@@ -1,7 +1,7 @@
 package dashbah.hse.lexiscan.app.controller;
 
-import dashbah.hse.lexiscan.app.dto.LoginDTO;
-import dashbah.hse.lexiscan.app.dto.UserDTO;
+import dashbah.hse.lexiscan.app.dto.client.auth.LoginDTO;
+import dashbah.hse.lexiscan.app.dto.client.auth.UserDTO;
 import dashbah.hse.lexiscan.app.service.RegistrationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

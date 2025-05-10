@@ -185,4 +185,13 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="change_ml_api" author="dashbah">
+        <addColumn tableName="message">
+            <column name="result_image_uid" type="varchar(255)"/>
+        </addColumn>
+        <addColumn tableName="ml_request">
+            <column name="result_image_uid" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

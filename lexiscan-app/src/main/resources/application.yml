@@ -56,3 +56,6 @@ storage:
 
 server:
   port: 8181
+
+swagger:
+  url: "http://localhost:8181"

@@ -1,15 +1,15 @@
-package dashbah.hse.lexiscan.app.dto;
+package dashbah.hse.lexiscan.app.dto.mlmodel;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MlModelRq {
-    String rquid;
-    String image; // base64 format
+public class MlModelRs {
+    MultipartFile resultImage;
 }

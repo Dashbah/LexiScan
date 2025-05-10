@@ -1,8 +1,8 @@
 package dashbah.hse.lexiscan.app.service;
 
-import dashbah.hse.lexiscan.app.dto.ChatHistoryRs;
-import dashbah.hse.lexiscan.app.dto.CreateChatRs;
-import dashbah.hse.lexiscan.app.dto.UserHistoryRs;
+import dashbah.hse.lexiscan.app.dto.client.chat.ChatHistoryRs;
+import dashbah.hse.lexiscan.app.dto.client.chat.CreateChatRs;
+import dashbah.hse.lexiscan.app.dto.client.chat.UserHistoryRs;
 import dashbah.hse.lexiscan.app.exception.ChatNotFoundException;
 import dashbah.hse.lexiscan.app.exception.UserNotFoundException;
 

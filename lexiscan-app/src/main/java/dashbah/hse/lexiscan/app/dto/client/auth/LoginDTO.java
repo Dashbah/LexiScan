@@ -1,5 +1,4 @@
-package dashbah.hse.lexiscan.app.dto;
-
+package dashbah.hse.lexiscan.app.dto.client.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CreateChatRs {
-    String rquid;
-    String chatUId;
+public class LoginDTO {
+    private String username;
+    private String password;
 }

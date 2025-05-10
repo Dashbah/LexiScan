@@ -1,4 +1,4 @@
-package dashbah.hse.lexiscan.app.dto;
+package dashbah.hse.lexiscan.app.dto.client.auth;
 
 import lombok.Getter;
 import lombok.Setter;

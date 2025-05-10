@@ -1,8 +1,9 @@
 package dashbah.hse.lexiscan.app.service.impl;
 
-import dashbah.hse.lexiscan.app.dto.ChatHistoryRs;
-import dashbah.hse.lexiscan.app.dto.CreateChatRs;
-import dashbah.hse.lexiscan.app.dto.UserHistoryRs;
+import dashbah.hse.lexiscan.app.dto.client.chat.ChatHistoryRs;
+import dashbah.hse.lexiscan.app.dto.client.chat.CreateChatRs;
+import dashbah.hse.lexiscan.app.dto.client.chat.UserHistoryRs;
+import dashbah.hse.lexiscan.app.dto.client.imageprocessing.ImageProcessingRs;
 import dashbah.hse.lexiscan.app.entity.Chat;
 import dashbah.hse.lexiscan.app.entity.UserEntity;
 import dashbah.hse.lexiscan.app.exception.ChatNotFoundException;
@@ -52,16 +53,17 @@ public class ChatServiceImpl implements ChatService {
     public ChatHistoryRs getChatHistory(String rquid, String chatUID) throws ChatNotFoundException {
         Chat chatEntity = chatRepositoryWrapper.findChatByChatUID(chatUID);
 
-        List<ChatHistoryRs.ImageProcessingRsWithImage> imageRses = new ArrayList<>();
+        List<ImageProcessingRs> imageRses = new ArrayList<>();
 
         for (var messageEntity : chatEntity.getMessages()) {
             var mlRequest = mlRequestRepository.findByImageUId(messageEntity.getImageUID());
-
-            imageRses.add(ChatHistoryRs.ImageProcessingRsWithImage.builder()
-                    .imageUId(messageEntity.getMessageUid())
-                    .percentage(mlRequest != null && mlRequest.getPercentage() != null ? mlRequest.getPercentage().toString() : null)
-                    .processingStatus(mlRequest != null ? mlRequest.getStatus() : null)
-                    .build());
+            if (mlRequest != null) {
+                imageRses.add(ImageProcessingRs.builder()
+                        .imageUploadedUId(mlRequest.getImageUId())
+                        .imageResultUId(mlRequest.getResultImageUId())
+                        .processingStatus(mlRequest.getStatus())
+                        .build());
+            }
         }
 
         return ChatHistoryRs.builder()

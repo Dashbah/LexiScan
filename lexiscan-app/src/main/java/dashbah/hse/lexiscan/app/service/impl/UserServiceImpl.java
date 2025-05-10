@@ -1,8 +1,8 @@
 package dashbah.hse.lexiscan.app.service.impl;
 
-import dashbah.hse.lexiscan.app.dto.UserDTO;
-import dashbah.hse.lexiscan.app.dto.UserDTORs;
-import dashbah.hse.lexiscan.app.dto.UserUpdateRequest;
+import dashbah.hse.lexiscan.app.dto.client.auth.UserDTO;
+import dashbah.hse.lexiscan.app.dto.client.auth.UserDTORs;
+import dashbah.hse.lexiscan.app.dto.client.auth.UserUpdateRequest;
 import dashbah.hse.lexiscan.app.entity.UserEntity;
 import dashbah.hse.lexiscan.app.exception.UserNotFoundException;
 import dashbah.hse.lexiscan.app.repository.wrapper.UserRepositoryWrapper;

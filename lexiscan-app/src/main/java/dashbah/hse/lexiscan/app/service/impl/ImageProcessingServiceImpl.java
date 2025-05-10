@@ -2,8 +2,8 @@ package dashbah.hse.lexiscan.app.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dashbah.hse.lexiscan.app.config.MlModelRestProperties;
-import dashbah.hse.lexiscan.app.dto.ImageProcessingRs;
-import dashbah.hse.lexiscan.app.dto.MlModelRs;
+import dashbah.hse.lexiscan.app.dto.client.imageprocessing.ImageProcessingRs;
+import dashbah.hse.lexiscan.app.dto.mlmodel.MlModelRs;
 import dashbah.hse.lexiscan.app.entity.Chat;
 import dashbah.hse.lexiscan.app.entity.Image;
 import dashbah.hse.lexiscan.app.entity.Message;
@@ -52,10 +52,10 @@ public class ImageProcessingServiceImpl implements ImageProcessingService {
      */
     @Override
     public ImageProcessingRs processImage(String rquid, String chatUId, byte[] image, String fileName) throws ChatNotFoundException, IOException {
-        MlRequest mlRequest = saveRequest(chatUId, image);
+        MlRequest updatedMlRq = saveRequest(chatUId, image);
         byte[] mlModelRq = null;
         try {
-            mlModelRq = buildMlModelRq(mlRequest);
+            mlModelRq = buildMlModelRq(updatedMlRq);
         } catch (ImageNotFoundException e) {
             log.error(rquid + ": Image was not found");
             throw new RuntimeException(e);
@@ -65,24 +65,26 @@ public class ImageProcessingServiceImpl implements ImageProcessingService {
         try {
             MlModelRs mlResponse = sendToMl(rquid, mlModelRq, fileName);
 
-            mlRequest = updateMlRq(mlResponse, mlRequest, "Completed");
+            updatedMlRq = updateMlRq(mlResponse, updatedMlRq, "Completed");
 
             return ImageProcessingRs.builder()
-                    .rquid(rquid)
-                    .confidence(mlResponse.getConfidence())
-                    .prediction(mlResponse.getPrediction())
+                    .imageUploadedUId(updatedMlRq.getImageUId())
+                    .imageResultUId(updatedMlRq.getResultImageUId())
                     .build();
+        } catch (IOException e) {
+            log.warn(rquid + ": ошибка парсинга ответа от мл модели. " + e.getMessage());
+            updateMlRqStatus(updatedMlRq, "ERROR");
+            throw e;
         } catch (RestClientException e) {
             log.warn(rquid + ": ошибка отправки сообщения в мл модель. " + e.getMessage());
-            updateMlRqStatus(mlRequest, "REST_ERROR");
+            updateMlRqStatus(updatedMlRq, "REST_ERROR");
             throw e;
         } catch (Exception e) {
             log.error(rquid + ": ошибка отправки сообщения в мл модель. " + e.getMessage());
-            updateMlRqStatus(mlRequest, "ERROR");
+            updateMlRqStatus(updatedMlRq, "ERROR");
             throw e;
         }
     }
-
 
     MlModelRs sendToMl(String rquid, byte[] mlModelRq, String fileName) throws IOException {
         CloseableHttpClient httpClient = HttpClients.createDefault();
@@ -114,10 +116,23 @@ public class ImageProcessingServiceImpl implements ImageProcessingService {
     }
 
     @Transactional
-    private MlRequest updateMlRq(MlModelRs mlResponse, MlRequest mlRequest, String status) {
-        mlRequest.setStatus(status);
-        mlRequest.setPercentage(mlResponse.getConfidence());
-        return mlRequestRepository.save(mlRequest);
+    private MlRequest updateMlRq(MlModelRs mlResponse, MlRequest mlRequest, String status) throws IOException {
+        try {
+            String imageUId = "img_" + System.currentTimeMillis();
+            Image image = Image.builder()
+                    .imageUid(imageUId)
+                    .body(mlResponse.getResultImage().getBytes())
+                    .build();
+            imageService.saveImage(image);
+            mlRequest.setResultImageUId(imageUId);
+            mlRequest.setStatus(status);
+            return mlRequestRepository.save(mlRequest);
+        } catch (IOException e) {
+            log.error(mlRequest.getRquid(), e.getMessage());
+            mlRequest.setStatus("ERROR");
+            mlRequestRepository.save(mlRequest);
+            throw e;
+        }
     }
 
     private MlRequest updateMlRqStatus(MlRequest mlRequest, String status) {
