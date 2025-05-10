@@ -1,5 +1,6 @@
 package dashbah.hse.lexiscan.app.service.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dashbah.hse.lexiscan.app.config.MlModelRestProperties;
 import dashbah.hse.lexiscan.app.dto.client.imageprocessing.ImageProcessingRs;
@@ -9,7 +10,6 @@ import dashbah.hse.lexiscan.app.entity.Image;
 import dashbah.hse.lexiscan.app.entity.Message;
 import dashbah.hse.lexiscan.app.entity.MlRequest;
 import dashbah.hse.lexiscan.app.exception.ChatNotFoundException;
-import dashbah.hse.lexiscan.app.exception.ImageNotFoundException;
 import dashbah.hse.lexiscan.app.repository.MessageRepository;
 import dashbah.hse.lexiscan.app.repository.MlRequestRepository;
 import dashbah.hse.lexiscan.app.service.ImageProcessingService;
@@ -53,17 +53,9 @@ public class ImageProcessingServiceImpl implements ImageProcessingService {
     @Override
     public ImageProcessingRs processImage(String rquid, String chatUId, byte[] image, String fileName) throws ChatNotFoundException, IOException {
         MlRequest updatedMlRq = saveRequest(chatUId, image);
-        byte[] mlModelRq = null;
-        try {
-            mlModelRq = buildMlModelRq(updatedMlRq);
-        } catch (ImageNotFoundException e) {
-            log.error(rquid + ": Image was not found");
-            throw new RuntimeException(e);
-        }
 
-        // Вызов ML-модели
         try {
-            MlModelRs mlResponse = sendToMl(rquid, mlModelRq, fileName);
+            MlModelRs mlResponse = sendToMl(rquid, image, fileName);
 
             updatedMlRq = updateMlRq(mlResponse, updatedMlRq, "Completed");
 
@@ -71,10 +63,6 @@ public class ImageProcessingServiceImpl implements ImageProcessingService {
                     .imageUploadedUId(updatedMlRq.getImageUId())
                     .imageResultUId(updatedMlRq.getResultImageUId())
                     .build();
-        } catch (IOException e) {
-            log.warn(rquid + ": ошибка парсинга ответа от мл модели. " + e.getMessage());
-            updateMlRqStatus(updatedMlRq, "ERROR");
-            throw e;
         } catch (RestClientException e) {
             log.warn(rquid + ": ошибка отправки сообщения в мл модель. " + e.getMessage());
             updateMlRqStatus(updatedMlRq, "REST_ERROR");
@@ -103,45 +91,53 @@ public class ImageProcessingServiceImpl implements ImageProcessingService {
         uploadFile.setEntity(multipart);
 
         log.info(rquid + ": image sending to ml-model, filename: " + fileName);
+
         try (CloseableHttpResponse response = httpClient.execute(uploadFile)) {
             HttpEntity responseEntity = response.getEntity();
+            String contentType = responseEntity.getContentType().getValue();
 
-            String responseString = EntityUtils.toString(responseEntity);
-            log.info("{}: received response from ml model: {}", rquid, responseString);
+            if (contentType.contains("application/json")) {
+                String responseString = EntityUtils.toString(responseEntity);
+                log.info("{}: received JSON response from ml model: {}", rquid, responseString);
 
-            ObjectMapper objectMapper = new ObjectMapper();
+                ObjectMapper objectMapper = new ObjectMapper();
+                JsonNode root = objectMapper.readTree(responseString);
 
-            return objectMapper.readValue(responseString, MlModelRs.class);
+                if (root.has("error")) {
+                    String errorMsg = root.get("error").asText();
+                    throw new RuntimeException("ML model error: " + errorMsg);
+                } else {
+                    log.warn("JSON type response without error from ml");
+                    // Если JSON с результатом, десериализуем
+                    return objectMapper.treeToValue(root, MlModelRs.class);
+                }
+            } else if (contentType.contains("image/png")) {
+                byte[] imageBytes = EntityUtils.toByteArray(responseEntity);
+                MlModelRs mlModelRs = new MlModelRs();
+                mlModelRs.setResultImageBytes(imageBytes);
+                return mlModelRs;
+            } else {
+                throw new RuntimeException("Unexpected content type: " + contentType);
+            }
         }
     }
 
     @Transactional
-    private MlRequest updateMlRq(MlModelRs mlResponse, MlRequest mlRequest, String status) throws IOException {
-        try {
-            String imageUId = "img_" + System.currentTimeMillis();
-            Image image = Image.builder()
-                    .imageUid(imageUId)
-                    .body(mlResponse.getResultImage().getBytes())
-                    .build();
-            imageService.saveImage(image);
-            mlRequest.setResultImageUId(imageUId);
-            mlRequest.setStatus(status);
-            return mlRequestRepository.save(mlRequest);
-        } catch (IOException e) {
-            log.error(mlRequest.getRquid(), e.getMessage());
-            mlRequest.setStatus("ERROR");
-            mlRequestRepository.save(mlRequest);
-            throw e;
-        }
+    private MlRequest updateMlRq(MlModelRs mlResponse, MlRequest mlRequest, String status) {
+        String imageUId = "img_" + System.currentTimeMillis();
+        Image image = Image.builder()
+                .imageUid(imageUId)
+                .body(mlResponse.getResultImageBytes())
+                .build();
+        imageService.saveImage(image);
+        mlRequest.setResultImageUId(imageUId);
+        mlRequest.setStatus(status);
+        return mlRequestRepository.save(mlRequest);
     }
 
     private MlRequest updateMlRqStatus(MlRequest mlRequest, String status) {
         mlRequest.setStatus(status);
         return mlRequestRepository.save(mlRequest);
-    }
-
-    private byte[] buildMlModelRq(MlRequest mlRequest) throws ImageNotFoundException {
-        return imageService.getImageBinaryDataByUid(mlRequest.getImageUId());
     }
 
     @Transactional

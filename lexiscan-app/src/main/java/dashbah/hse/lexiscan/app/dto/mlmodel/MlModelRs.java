@@ -1,15 +1,16 @@
 package dashbah.hse.lexiscan.app.dto.mlmodel;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.web.multipart.MultipartFile;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MlModelRs {
-    MultipartFile resultImage;
+    private byte[] resultImageBytes;
 }
