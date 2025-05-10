@@ -28,6 +28,9 @@ public class ImageController {
                     .body(body);
         } catch (ImageNotFoundException e) {
             throw new RuntimeException(e);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return ResponseEntity.internalServerError().build();
         }
     }
 }

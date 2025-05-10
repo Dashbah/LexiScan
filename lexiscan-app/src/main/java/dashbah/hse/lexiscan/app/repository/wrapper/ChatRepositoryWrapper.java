@@ -4,6 +4,7 @@ import dashbah.hse.lexiscan.app.entity.Chat;
 import dashbah.hse.lexiscan.app.entity.UserEntity;
 import dashbah.hse.lexiscan.app.exception.ChatNotFoundException;
 import dashbah.hse.lexiscan.app.repository.ChatRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -24,5 +25,10 @@ public class ChatRepositoryWrapper {
 
     public List<Chat> findAllByUser(UserEntity user) {
         return chatRepository.findAllByUser(user);
+    }
+
+    @Transactional
+    public void deleteChat(String chatUId) {
+        chatRepository.deleteByChatUid(chatUId);
     }
 }

@@ -11,5 +11,7 @@ public interface ChatService {
 
     ChatHistoryRs getChatHistory(String rquid, String chatUID) throws ChatNotFoundException;
 
+    void deleteChatHistory(String rquid, String chatUID);
+
     UserHistoryRs getAllChatHistory(String rquid, String username) throws UserNotFoundException;
 }

@@ -74,6 +74,12 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
+    public void deleteChatHistory(String rquid, String chatUID) {
+        chatRepositoryWrapper.deleteChat(chatUID);
+        log.info("chat deleted with chatUId = " + chatUID);
+    }
+
+    @Override
     public UserHistoryRs getAllChatHistory(String rquid, String username) throws UserNotFoundException {
         UserEntity user = userRepositoryWrapper.findUserByUserName(username);
 
