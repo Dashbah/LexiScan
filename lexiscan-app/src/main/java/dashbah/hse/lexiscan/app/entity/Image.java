@@ -26,7 +26,7 @@ public class Image {
     @Column(nullable = false)
     private byte[] body;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "message_id", nullable = false)
     private Message message;
 }

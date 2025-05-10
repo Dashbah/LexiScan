@@ -64,7 +64,7 @@ public class ImageProcessingServiceImpl implements ImageProcessingService {
                     .imageResultUId(updatedMlRq.getResultImageUId())
                     .build();
         } catch (RestClientException e) {
-            log.warn(rquid + ": ошибка отправки сообщения в мл модель. " + e.getMessage());
+            log.warn(rquid + ": rest ошибка отправки сообщения в мл модель. " + e.getMessage());
             updateMlRqStatus(updatedMlRq, "REST_ERROR");
             throw e;
         } catch (Exception e) {
@@ -112,6 +112,7 @@ public class ImageProcessingServiceImpl implements ImageProcessingService {
                     return objectMapper.treeToValue(root, MlModelRs.class);
                 }
             } else if (contentType.contains("image/png")) {
+                log.info(rquid + "received image.png response from ml");
                 byte[] imageBytes = EntityUtils.toByteArray(responseEntity);
                 MlModelRs mlModelRs = new MlModelRs();
                 mlModelRs.setResultImageBytes(imageBytes);
@@ -125,11 +126,14 @@ public class ImageProcessingServiceImpl implements ImageProcessingService {
     @Transactional
     private MlRequest updateMlRq(MlModelRs mlResponse, MlRequest mlRequest, String status) {
         String imageUId = "img_" + System.currentTimeMillis();
+        Message message = messageRepository.findByImageUID(mlRequest.getImageUId());
         Image image = Image.builder()
                 .imageUid(imageUId)
                 .body(mlResponse.getResultImageBytes())
+                .message(message)
                 .build();
         imageService.saveImage(image);
+        log.info(mlRequest.getRquid() + ": image saved");
         mlRequest.setResultImageUId(imageUId);
         mlRequest.setStatus(status);
         return mlRequestRepository.save(mlRequest);
