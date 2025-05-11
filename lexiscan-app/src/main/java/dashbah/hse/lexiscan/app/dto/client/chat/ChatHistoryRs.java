@@ -9,7 +9,6 @@ import java.util.List;
 @Data
 @Builder
 public class ChatHistoryRs {
-
     String chatUId;
     String chatName;
     List<ImageProcessingRs> imageProcessingImages;
