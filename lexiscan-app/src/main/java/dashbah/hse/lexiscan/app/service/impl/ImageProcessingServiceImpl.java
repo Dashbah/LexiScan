@@ -10,6 +10,7 @@ import dashbah.hse.lexiscan.app.entity.Image;
 import dashbah.hse.lexiscan.app.entity.Message;
 import dashbah.hse.lexiscan.app.entity.MlRequest;
 import dashbah.hse.lexiscan.app.exception.ChatNotFoundException;
+import dashbah.hse.lexiscan.app.repository.ImageRepository;
 import dashbah.hse.lexiscan.app.repository.MessageRepository;
 import dashbah.hse.lexiscan.app.repository.MlRequestRepository;
 import dashbah.hse.lexiscan.app.service.ImageProcessingService;
@@ -40,7 +41,8 @@ public class ImageProcessingServiceImpl implements ImageProcessingService {
     private final RepositoryDataHandler repositoryDataHandler;
     private final MessageRepository messageRepository;
     private final MlRequestRepository mlRequestRepository;
-    private final ImageService imageService;
+    private final ImageRepository imageRepository;
+    private final ImageService imageS3Service;
     private final MlModelRestProperties mlModelRestProperties;
 
     /**
@@ -52,12 +54,12 @@ public class ImageProcessingServiceImpl implements ImageProcessingService {
      */
     @Override
     public ImageProcessingRs processImage(String rquid, String chatUId, byte[] image, String fileName) throws ChatNotFoundException, IOException {
-        MlRequest updatedMlRq = saveRequest(chatUId, image);
+        MlRequest updatedMlRq = saveRequest(chatUId, image); // saves to db and to s3
 
         try {
             MlModelRs mlResponse = sendToMl(rquid, image, fileName);
 
-            updatedMlRq = updateMlRq(mlResponse, updatedMlRq, "Completed");
+            updatedMlRq = updateMlRq(mlResponse, updatedMlRq, "Completed"); // saves result to db and to s3
 
             return ImageProcessingRs.builder()
                     .imageUploadedUId(updatedMlRq.getImageUId())
@@ -74,7 +76,7 @@ public class ImageProcessingServiceImpl implements ImageProcessingService {
         }
     }
 
-    MlModelRs sendToMl(String rquid, byte[] mlModelRq, String fileName) throws IOException {
+    MlModelRs sendToMl(String rquid, byte[] image, String fileName) throws IOException {
         CloseableHttpClient httpClient = HttpClients.createDefault();
         HttpPost uploadFile = new HttpPost(mlModelRestProperties.getMlModelUrl());
         MultipartEntityBuilder builder = MultipartEntityBuilder.create();
@@ -82,7 +84,7 @@ public class ImageProcessingServiceImpl implements ImageProcessingService {
 
         builder.addBinaryBody(
                 "image",
-                mlModelRq,
+                image,
                 ContentType.APPLICATION_OCTET_STREAM,
                 fileName
         );
@@ -129,10 +131,12 @@ public class ImageProcessingServiceImpl implements ImageProcessingService {
         Message message = messageRepository.findByImageUID(mlRequest.getImageUId());
         Image image = Image.builder()
                 .imageUid(imageUId)
-                .body(mlResponse.getResultImageBytes())
                 .message(message)
                 .build();
-        imageService.saveImage(image);
+
+        imageRepository.save(image);
+        imageS3Service.saveImage(imageUId, mlResponse.getResultImageBytes());
+
         log.info(mlRequest.getRquid() + ": image saved");
         mlRequest.setResultImageUId(imageUId);
         mlRequest.setStatus(status);
@@ -162,10 +166,10 @@ public class ImageProcessingServiceImpl implements ImageProcessingService {
 
         Image image = Image.builder()
                 .imageUid(imageUId)
-                .body(imageData.clone())
                 .message(message)
                 .build();
-        imageService.saveImage(image);
+        imageRepository.save(image);
+        imageS3Service.saveImage(imageUId, imageData);
 
         MlRequest mlRequest = MlRequest.builder()
                 .rquid("req_" + System.currentTimeMillis())

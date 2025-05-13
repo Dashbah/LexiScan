@@ -59,3 +59,14 @@ server:
 
 swagger:
   url: "http://localhost:8181"
+
+# test data, differs from the production one, that is written in secrets
+s3:
+  key-id: "paste your key"
+  secret-key: "paste your key"
+  region: "ru-central1"
+  s3-endpoint: "https://storage.yandexcloud.net"
+  bucket: "bakhankova-hse"
+
+jwt-security:
+  key: "paste your key"

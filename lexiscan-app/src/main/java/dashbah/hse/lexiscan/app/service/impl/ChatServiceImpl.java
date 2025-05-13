@@ -57,7 +57,7 @@ public class ChatServiceImpl implements ChatService {
 
         for (var messageEntity : chatEntity.getMessages()) {
             var mlRequest = mlRequestRepository.findByImageUId(messageEntity.getImageUID());
-            if (mlRequest != null) {
+            if (mlRequest != null && mlRequest.getStatus().equals("Completed")) {
                 imageRses.add(ImageProcessingRs.builder()
                         .imageUploadedUId(mlRequest.getImageUId())
                         .imageResultUId(mlRequest.getResultImageUId())

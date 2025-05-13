@@ -194,4 +194,12 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="make_body_nullable" author="dashbah">
+        <dropNotNullConstraint tableName="image" columnName="body"/>
+    </changeSet>
+
+    <changeSet id="drop_image_body" author="dashbah">
+        <dropColumn tableName="image" columnName="body"/>
+    </changeSet>
+
 </databaseChangeLog>
