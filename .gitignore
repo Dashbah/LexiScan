@@ -27,3 +27,6 @@ replay_pid*
 *target/
 photos/
 *.iml
+
+logs/
+lexiscan-app/prometheus/

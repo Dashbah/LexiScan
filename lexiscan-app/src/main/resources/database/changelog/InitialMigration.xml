@@ -185,4 +185,21 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="change_ml_api" author="dashbah">
+        <addColumn tableName="message">
+            <column name="result_image_uid" type="varchar(255)"/>
+        </addColumn>
+        <addColumn tableName="ml_request">
+            <column name="result_image_uid" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="make_body_nullable" author="dashbah">
+        <dropNotNullConstraint tableName="image" columnName="body"/>
+    </changeSet>
+
+    <changeSet id="drop_image_body" author="dashbah">
+        <dropColumn tableName="image" columnName="body"/>
+    </changeSet>
+
 </databaseChangeLog>

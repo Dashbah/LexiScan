@@ -1,8 +1,8 @@
 package dashbah.hse.lexiscan.app.controller;
 
-import dashbah.hse.lexiscan.app.dto.ChatHistoryRs;
-import dashbah.hse.lexiscan.app.dto.CreateChatRs;
-import dashbah.hse.lexiscan.app.dto.UserHistoryRs;
+import dashbah.hse.lexiscan.app.dto.client.chat.ChatHistoryRs;
+import dashbah.hse.lexiscan.app.dto.client.chat.CreateChatRs;
+import dashbah.hse.lexiscan.app.dto.client.chat.UserHistoryRs;
 import dashbah.hse.lexiscan.app.exception.ChatNotFoundException;
 import dashbah.hse.lexiscan.app.exception.UserNotFoundException;
 import dashbah.hse.lexiscan.app.service.ChatService;
@@ -59,6 +59,22 @@ public class ChatController {
             return ResponseEntity.ok(response);
         } catch (ChatNotFoundException e) {
             return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            log.error("rquid = " + rquid + " " + e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @DeleteMapping("/{chatUId}")
+    public ResponseEntity<Void> deleteChatHistory(@PathVariable String chatUId) {
+        var rquid = generateUid();
+        log.info(rquid + ": запрос на удаление чата");
+        try {
+            chatService.deleteChatHistory(rquid, chatUId);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            log.error("rquid = " + rquid + " " + e.getMessage());
+            return ResponseEntity.internalServerError().build();
         }
     }
 

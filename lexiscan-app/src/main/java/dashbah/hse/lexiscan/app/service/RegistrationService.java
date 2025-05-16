@@ -1,8 +1,8 @@
 package dashbah.hse.lexiscan.app.service;
 
 import dashbah.hse.lexiscan.app.config.security.JwtService;
-import dashbah.hse.lexiscan.app.dto.LoginDTO;
-import dashbah.hse.lexiscan.app.dto.UserDTO;
+import dashbah.hse.lexiscan.app.dto.client.auth.LoginDTO;
+import dashbah.hse.lexiscan.app.dto.client.auth.UserDTO;
 import dashbah.hse.lexiscan.app.entity.Role;
 import dashbah.hse.lexiscan.app.entity.Token;
 import dashbah.hse.lexiscan.app.entity.UserEntity;

@@ -22,11 +22,7 @@ public class Image {
     @Column(name = "image_uid", nullable = false)
     private String imageUid;
 
-    @Lob
-    @Column(nullable = false)
-    private byte[] body;
-
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "message_id", nullable = false)
     private Message message;
 }

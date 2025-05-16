@@ -33,4 +33,7 @@ public class Message {
 
     @Column(name = "image_uid")
     private String imageUID;
+
+    @Column(name = "result_image_uid")
+    private String result_ImageUID;
 }
